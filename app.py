@@ -48,4 +48,4 @@ docs.register(Login)
 if __name__ == '__main__':
     # JWT token setting
     jwt = JWTManager().init_app(app) # 要透過__name__ == '__main__'方式執行，而且要放在app.run之前執行
-    app.run(host='127.0.0.1', port=10009)
+    app.run(host='52.179.100.221', port=10009)
