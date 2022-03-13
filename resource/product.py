@@ -5,7 +5,6 @@ from . import router_model
 from flask_jwt_extended import create_access_token, jwt_required # 產生token的套件
 from datetime import timedelta
 
-
 def db_init():
     db = pymysql.connect(
         host='127.0.0.1',
@@ -28,19 +27,23 @@ def get_access_token(account):
 
 class Product(MethodResource):
     
-    # Get 查詢商品
-    @doc(description='Get Product info.', tags=['查詢商品']) # 頁面的標題與分類
+################ Get 查詢商品 ################ 
+# 不輸入的話，可以get全部資料
+# 商品不存在要return無此商品
+
+    @doc(description='查詢商品資訊\n不輸入品名可以查詢全部', tags=['商品']) # 頁面的標題與分類
     @use_kwargs(router_model.ProductGetSchema, location="query") # 頁面input欄位
     @marshal_with(router_model.GetResponse, code=200) # Response(檢查格式)
-    #@jwt_required() # 求client一定要提交token並驗證
+    @jwt_required() # 求client一定要提交token並驗證
     def get(self, **kwargs):
         db, cursor = db_init()
+        
+        # 不輸入的話，可以get全部資料
         product_name = kwargs.get("name") # 判斷是不是空值 None
         if product_name is not None:
             sql = f"SELECT * FROM test.product WHERE product_name = '{product_name}';"         
         else:
             sql = f"SELECT * FROM test.product ;" 
-        
         result = cursor.execute(sql)
         # 檢查商品存不存在
         if result == 0:
@@ -49,17 +52,23 @@ class Product(MethodResource):
         db.close()
         return util.success(msg)
     
-    # POST 新增商品
-    @doc(description='Create Product.', tags=['新增商品']) # 頁面的標題與分類
+################ POST 新增商品 ################ 
+# 檢查商品是否已存在，避免重複建立
+
+    @doc(description='新增商品', tags=['商品']) # 頁面的標題與分類
     @use_kwargs(router_model.ProductPostSchema, location="form") # 頁面input欄位
     @marshal_with(router_model.CommonResponse, code=201) # Response(檢查格式)
+    @jwt_required() # 求client一定要提交token並驗證
+    #@jwt_required()
     def post(self, **kwargs):
         db, cursor = db_init()
+        
         # 檢查商品是否已存在
         name = kwargs["product_name"]
         sql = f"SELECT * FROM test.product WHERE product_name = '{name}';"
-        check = cursor.execute(sql)
-        if check == 0:
+        result = cursor.execute(sql)
+        # 撈取結果 0 代表不存在，才能寫入
+        if result == 0:
 
             sql = """
 
@@ -68,29 +77,30 @@ class Product(MethodResource):
 
             """.format(
                 kwargs['product_name'], kwargs['price'], kwargs['amount'])
-            result = cursor.execute(sql)
-            db.commit()  # 測試,將執行成功的結果存進database裡
+            cursor.execute(sql)
+            db.commit()  # 測試，將執行成功的結果存進database裡
             db.close()
             return util.success()
         else:
             return util.failure({"message": "該商品資料已存在"})
 
-    
-    # patch 更新商品
-    @doc(description='Update User info.', tags=['更新商品']) # 頁面的標題與分類
+    ################ Patch 更新商品 ################ 
+# 檢查商品存不存在，不存在的話無法修改
+    @doc(description='更新商品', tags=['商品']) # 頁面的標題與分類
     @use_kwargs(router_model.ProductPatchSchema, location="form") # 頁面input欄位
     @marshal_with(router_model.CommonResponse, code=201) # Response(檢查格式)
+    @jwt_required() # 求client一定要提交token並驗證
     def patch(self, **kwargs):
         db, cursor = db_init()
         
-        user = {
+        product = {
             'product_name': kwargs['product_name'],
             'price': kwargs['price'],
             'amount': kwargs['amount'],
         }
 
         query = []
-        for key, value in user.items():
+        for key, value in product.items():
             if value is not None:
                 query.append(f"{key} = '{value}'")
         query = ",".join(query)
@@ -110,10 +120,12 @@ class Product(MethodResource):
 
         return util.success()
 
-    # Delete 刪除商品
-    @doc(description='Delete Product info.', tags=['刪除商品']) # 頁面的標題與分類
+    ################ Dlete 刪除商品 ################ 
+# 檢查商品存不存在，不存在的話無法刪除
+    @doc(description='刪除商品', tags=['商品']) # 頁面的標題與分類
     @use_kwargs(router_model.ProductDleteSchema, location="form") # 頁面input欄位
     @marshal_with(None, code=204) # Response(檢查格式)
+    @jwt_required() # 求client一定要提交token並驗證
     def delete(self, name):
         db, cursor = db_init()
         sql = f"DELETE FROM `test`.`product` WHERE product_name = '{name}';"

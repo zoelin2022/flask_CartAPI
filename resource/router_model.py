@@ -22,27 +22,40 @@ class ProductDleteSchema(Schema):
     name = fields.Str(example="string")
     
 ###############################################################
+
+# Get 查詢購物車內商品
+class CartGetSchema(Schema):
+    name = fields.Str(example="string", required=True) 
     
+# Post 新增商品至購物車
+class CartPostSchema(Schema):
+    name = fields.Str(doc="name", example="string", required=True)
+    product_name = fields.Str(doc="product_name", example="string", required=True)
+    amount = fields.Int(doc="amount", example="string", required=True)
+
+# Patch 修改購物車商品內容
+class CartPatchSchema(Schema):
+    name = fields.Str(doc="name", example="string", required=True)
+    product_name = fields.Str(doc="product_name", example="string", required=True)
+    amount = fields.Int(doc="amount", example="string", required=True)
+
+# Delete 刪除購物車
+class CartDleteSchema(Schema):
+    name = fields.Str(example="string", required=True)
+    
+###############################################################
+  
 # Get 查詢訂單
-class OrderGetSchema(Schema):
+class OrderNewGetSchema(Schema):
+    order_no = fields.Str(example="string", required=True)
+      
+# Post 寫入訂單
+class OrderNewPostOrderSchema(Schema):
     name = fields.Str(example="string") 
     
-# Post 新增訂單
-class ProductPostOrderSchema(Schema):
-    name = fields.Str(doc="name", example="string", required=True)
-    product_name = fields.Str(doc="product_name", example="string", required=True)
-    amount = fields.Int(doc="amount", example="string", required=True)
-
-# Patch 修改訂單
-class OrderPatchSchema(Schema):
-    id = fields.Int(doc="id", example="string", required=True)
-    name = fields.Str(doc="name", example="string", required=True)
-    product_name = fields.Str(doc="product_name", example="string", required=True)
-    amount = fields.Int(doc="amount", example="string", required=True)
-
-# Delete 刪除訂單 
-class OrderDleteSchema(Schema):
-    id = fields.Int(example="string")
+# Delete 刪除訂單
+class OrderNewDleteSchema(Schema):
+    order_no = fields.Str(example="string", required=True) 
     
 ###############################################################
 

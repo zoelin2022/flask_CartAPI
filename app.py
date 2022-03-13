@@ -2,10 +2,11 @@ import flask
 from flask_restful import Api
 from resource.user import User, Login
 from resource.product import Product
-from resource.order import Order
+from resource.cart import Cart
+from resource.order import Order_new
 from apispec import APISpec
-from apispec.ext.marshmallow import MarshmallowPlugin
-from flask_apispec.extension import FlaskApiSpec
+from apispec.ext.marshmallow import MarshmallowPlugin # 序列化處理框架(資料型別轉換校驗
+from flask_apispec.extension import FlaskApiSpec # 產生api文件導入swagger
 from flask_jwt_extended import JWTManager # 產生token的套件
 
 # Flask setting
@@ -14,9 +15,10 @@ app = flask.Flask(__name__)
 # Flask restful setting 建立元件物件
 api = Api(app)
 
-
-app.config["DEBUG"] = True # Able to reload flask without exit the process
-app.config["JWT_SECRET_KEY"] = "secret_key" #JWT token setting # 設定環境變數
+# Able to reload flask without exit the process 檔案有異動時會自動重啟
+app.config["DEBUG"] = True 
+#JWT token setting 設定環境變數
+app.config["JWT_SECRET_KEY"] = "secret_key" 
 
 # Swagger setting
 app.config.update({
@@ -32,20 +34,26 @@ app.config.update({
 # 建立元件物件
 docs = FlaskApiSpec(app)
 
-# URL(router) 
+# Product URL
 api.add_resource(Product, "/product")
 docs.register(Product)
 
-api.add_resource(Order, "/Order")
-docs.register(Order)
+# Cart URL
+api.add_resource(Cart, "/Cart")
+docs.register(Cart)
 
+# Order_new URL
+api.add_resource(Order_new, "/Order")
+docs.register(Order_new)
+
+# User URL
 api.add_resource(User, "/user")
 docs.register(User) 
-
+# Login URL
 api.add_resource(Login, "/login")
 docs.register(Login)
 
 if __name__ == '__main__':
-    # JWT token setting
-    jwt = JWTManager().init_app(app) # 要透過__name__ == '__main__'方式執行，而且要放在app.run之前執行
-    app.run(host='52.179.100.221', port=10009)
+    # JWT token 要透過__name__ == '__main__'方式執行，而且要放在app.run之前執行
+    jwt = JWTManager().init_app(app) 
+    app.run(host='127.0.0.1', port=10009)
